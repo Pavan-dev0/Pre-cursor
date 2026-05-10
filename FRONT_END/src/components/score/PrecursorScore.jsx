@@ -4,7 +4,7 @@ import { useCountUp } from '../../hooks/useCountUp'
 import { profileData } from '../../data/mockData'
 
 export default function PrecursorScore() {
-  const { ref, inView } = useInView(0.2)
+  const { ref, inView } = useInView({ threshold: 0.2, rootMargin: '0px 0px -10% 0px' })
   const score = useCountUp(profileData.score, inView, 1500)
 
   return (

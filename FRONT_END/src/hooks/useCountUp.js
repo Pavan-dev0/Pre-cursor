@@ -1,10 +1,19 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 export function useCountUp(target, trigger, duration = 2000) {
   const [count, setCount] = useState(0)
+  const frameRef = useRef(null)
 
   useEffect(() => {
-    if (!trigger) return
+    if (frameRef.current) {
+      cancelAnimationFrame(frameRef.current)
+      frameRef.current = null
+    }
+
+    if (!trigger) {
+      setCount(0)
+      return
+    }
 
     let start = null
 
@@ -14,11 +23,24 @@ export function useCountUp(target, trigger, duration = 2000) {
       // easeOutExpo
       const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress)
       setCount(Math.floor(ease * target))
-      if (progress < 1) requestAnimationFrame(step)
-      else setCount(target)
+      if (progress < 1) {
+        frameRef.current = requestAnimationFrame(step)
+        return
+      }
+
+      setCount(target)
+      frameRef.current = null
     }
 
-    requestAnimationFrame(step)
+    setCount(0)
+    frameRef.current = requestAnimationFrame(step)
+
+    return () => {
+      if (frameRef.current) {
+        cancelAnimationFrame(frameRef.current)
+        frameRef.current = null
+      }
+    }
   }, [target, trigger, duration])
 
   return count

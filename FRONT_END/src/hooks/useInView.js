@@ -1,23 +1,37 @@
-import { useRef, useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
-export function useInView(threshold = 0.2) {
-  const ref = useRef(null)
+export function useInView(options = 0.2) {
+  const config = typeof options === 'number' ? { threshold: options } : options
+  const { threshold = 0.2, root = null, rootMargin = '0px', triggerOnce = true } = config
+  const [node, setNode] = useState(null)
   const [inView, setInView] = useState(false)
 
   useEffect(() => {
-    const el = ref.current
-    if (!el) return
+    if (!node) return
+    if (typeof IntersectionObserver === 'undefined') {
+      setInView(true)
+      return
+    }
+    if (triggerOnce && inView) return
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) setInView(true)
+        if (entry.isIntersecting) {
+          setInView(true)
+          if (triggerOnce) observer.disconnect()
+          return
+        }
+
+        if (!triggerOnce) {
+          setInView(false)
+        }
       },
-      { threshold }
+      { threshold, root, rootMargin }
     )
 
-    observer.observe(el)
+    observer.observe(node)
     return () => observer.disconnect()
-  }, [threshold])
+  }, [inView, node, root, rootMargin, threshold, triggerOnce])
 
-  return { ref, inView }
+  return { ref: setNode, inView }
 }
