@@ -1,10 +1,9 @@
-import { sourceCount } from '../../data/mockData'
 import { useCountUp } from '../../hooks/useCountUp'
 
 const SOURCE_TYPES = ['Job Boards', 'Forums', 'VC Portfolios', 'Reviews', 'Launches', 'News']
 
-export default function SourceCounter({ checkedCount, trigger, duration }) {
-  const count = useCountUp(sourceCount, trigger, duration)
+export default function SourceCounter({ checkedCount, trigger, duration, sourceCountTarget = 0 }) {
+  const count = useCountUp(sourceCountTarget, trigger, duration)
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>

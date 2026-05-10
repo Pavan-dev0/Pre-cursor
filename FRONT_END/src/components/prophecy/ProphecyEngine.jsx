@@ -1,16 +1,26 @@
+import { motion } from 'framer-motion'
 import ProphecyCard from './ProphecyCard'
-import { prophecies } from '../../data/mockData'
+import { fadeUpVariants, staggerContainer, transitions, viewportOnce, withDelay } from '../../lib/motion'
+import { useAdaptiveSection } from '../../lib/adaptive.jsx'
 
-export default function ProphecyEngine() {
+export default function ProphecyEngine({ prophecies = [], sourcesCount = 0, notice = '' }) {
+  const { ref, isActive, wasVisited } = useAdaptiveSection('prophecy')
+
   return (
-    <div
+    <motion.div
+      ref={ref}
+      className={`narrative-section narrative-section-prophecy ${isActive ? 'is-active' : ''} ${wasVisited ? 'was-visited' : ''}`}
+      initial="hidden"
+      whileInView="visible"
+      viewport={viewportOnce}
+      variants={staggerContainer(0.08, 0.02)}
       style={{
         borderTop: '1px solid rgba(255,255,255,0.08)',
-        padding: '80px 48px',
+        padding: '72px 48px 76px',
       }}
     >
       {/* Header */}
-      <div style={{ textAlign: 'center', marginBottom: 48 }}>
+      <motion.div variants={fadeUpVariants(18, transitions.reveal)} style={{ textAlign: 'center', marginBottom: 34 }}>
         <div
           className="font-display"
           style={{
@@ -24,18 +34,36 @@ export default function ProphecyEngine() {
         </div>
         <div
           className="font-mono"
-          style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 12 }}
+          style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 10 }}
         >
-          Precursor Prophecy Engine — pattern-matched from 31 live sources
+          Precursor Prophecy Engine — pattern-matched from {sourcesCount} live sources
         </div>
-      </div>
+      </motion.div>
 
       {/* Cards row — gap IS the divider */}
-      <div style={{ display: 'flex', gap: 1 }}>
-        {prophecies.map((p, i) => (
-          <ProphecyCard key={i} prophecy={p} delay={i * 0.15} />
-        ))}
-      </div>
-    </div>
+      <motion.div
+        variants={fadeUpVariants(18, withDelay(transitions.reveal, 0.04))}
+        style={{ display: 'flex', gap: 1 }}
+      >
+        {prophecies.length > 0 ? (
+          prophecies.map((p, i) => (
+            <ProphecyCard key={i} prophecy={p} delay={i * 0.15} />
+          ))
+        ) : (
+          <div
+            className="interactive-panel ambient-panel"
+            style={{
+              flex: 1,
+              padding: 32,
+              border: '1px solid rgba(255,255,255,0.1)',
+              background: 'var(--bg-surface)',
+              color: 'var(--text-secondary)'
+            }}
+          >
+            {notice || 'Prophecy Engine temporarily unavailable'}
+          </div>
+        )}
+      </motion.div>
+    </motion.div>
   )
 }

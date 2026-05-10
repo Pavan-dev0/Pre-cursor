@@ -6,9 +6,9 @@ export default function SourceChips() {
       {chips.map((chip) => (
         <span
           key={chip}
-          className="font-mono"
+          className="font-mono ambient-chip mono-meta"
           style={{
-            border: '1px solid rgba(255,255,255,0.12)',
+            border: '1px solid rgba(255,255,255,0.18)',
             background: 'transparent',
             fontSize: 10,
             letterSpacing: '0.08em',

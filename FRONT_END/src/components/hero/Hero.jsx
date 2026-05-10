@@ -1,32 +1,46 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import Ticker from '../layout/Ticker'
 import SourceChips from './SourceChips'
+import { fadeUpVariants, staggerContainer, transitions, withDelay } from '../../lib/motion'
+import { useAdaptiveSection, useAdaptiveSurface } from '../../lib/adaptive.jsx'
 
-const containerVariants = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.12 } },
-}
+const containerVariants = staggerContainer(0.1, 0.05)
+const itemVariants = fadeUpVariants(24, transitions.reveal)
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 24 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } },
-}
-
-export default function Hero({ setView }) {
+export default function Hero({ onScan }) {
+  const { ref, isActive, wasVisited } = useAdaptiveSection('hero', { threshold: 0.45, rootMargin: '0px 0px -20% 0px' })
+  const { surfaceProps, isDwelled, isFocused: isSurfaceFocused } = useAdaptiveSurface({ intensity: 0.12, dwellDelay: 300, focusBoost: 0.16 })
   const [inputVal, setInputVal] = useState('Bangalore B2B SaaS Ecosystem, May 2026')
+  const [isFocused, setIsFocused] = useState(false)
 
   const handleScan = () => {
-    if (inputVal.trim()) setView('loading')
+    if (inputVal.trim()) onScan(inputVal.trim())
   }
 
-  const handleKey = (e) => {
+  const handleInputKey = (e) => {
     if (e.key === 'Enter') handleScan()
   }
 
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (e.ctrlKey && e.key === 'd') {
+        e.preventDefault()
+        setInputVal('Bangalore B2B SaaS Ecosystem')
+        window.setTimeout(() => onScan('Bangalore B2B SaaS Ecosystem'), 300)
+      }
+    }
+
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [onScan])
+
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', position: 'relative', overflow: 'hidden' }}>
-      <div className="grain-overlay" />
+    <div
+      ref={ref}
+      className={`hero-shell narrative-section ${isActive ? 'is-active' : ''} ${wasVisited ? 'was-visited' : ''}`}
+      style={{ minHeight: '100vh', background: 'var(--bg-primary)', position: 'relative', overflow: 'hidden' }}
+    >
 
       {/* Ghost number */}
       <div
@@ -80,7 +94,7 @@ export default function Hero({ setView }) {
           {/* Heading */}
           <motion.div variants={itemVariants} style={{ marginTop: 20 }}>
             <div
-              className="font-display"
+              className="font-display ambient-heading"
               style={{
                 fontWeight: 800,
                 fontSize: 'clamp(48px, 6vw, 80px)',
@@ -112,32 +126,49 @@ export default function Hero({ setView }) {
           </motion.p>
 
           {/* Input row */}
-          <motion.div variants={itemVariants} style={{ display: 'flex', gap: 0, marginTop: 32, maxWidth: 560 }}>
+          <motion.div
+            variants={itemVariants}
+            className={`scan-shell ${isFocused ? 'is-focused' : ''} ${isDwelled || isSurfaceFocused ? 'is-dwelled' : ''}`}
+            style={{ display: 'flex', gap: 0, marginTop: 32, maxWidth: 560 }}
+            {...surfaceProps}
+          >
             <input
               value={inputVal}
               onChange={(e) => setInputVal(e.target.value)}
-              onKeyDown={handleKey}
-              className="font-mono"
+              onKeyDown={handleInputKey}
+              className="font-mono scan-input mono-meta"
               placeholder="Enter industry or city..."
               style={{
                 fontSize: 14,
                 background: 'var(--bg-surface)',
-                border: '1px solid rgba(255,255,255,0.15)',
+                border: `1px solid ${isFocused ? '#6C63FF' : 'rgba(255,255,255,0.15)'}`,
                 borderRight: 'none',
                 height: 52,
                 padding: '0 20px',
                 flex: 1,
                 color: 'var(--text-primary)',
                 outline: 'none',
-                transition: 'border-color 200ms',
                 borderRadius: 0,
               }}
-              onFocus={(e) => (e.target.style.borderColor = 'var(--accent)')}
-              onBlur={(e) => (e.target.style.borderColor = 'rgba(255,255,255,0.15)')}
+              onFocus={(event) => {
+                setIsFocused(true)
+                surfaceProps.onFocus(event)
+              }}
+              onBlur={(event) => {
+                setIsFocused(false)
+                surfaceProps.onBlur(event)
+              }}
             />
-            <button
+            <motion.button
               onClick={handleScan}
               className="font-display"
+              whileHover={{
+                scale: 1.012,
+                backgroundColor: 'rgba(108,99,255,0.9)',
+                boxShadow: 'var(--glow-accent-soft)',
+              }}
+              whileTap={{ scale: 0.986 }}
+              transition={transitions.standard}
               style={{
                 fontWeight: 800,
                 fontSize: 13,
@@ -148,15 +179,13 @@ export default function Hero({ setView }) {
                 border: 0,
                 cursor: 'pointer',
                 letterSpacing: '0.08em',
-                transition: 'background 150ms',
                 borderRadius: 0,
                 flexShrink: 0,
+                willChange: 'transform, box-shadow, background-color',
               }}
-              onMouseEnter={(e) => (e.target.style.background = 'rgba(108,99,255,0.85)')}
-              onMouseLeave={(e) => (e.target.style.background = 'var(--accent)')}
             >
               SCAN →
-            </button>
+            </motion.button>
           </motion.div>
 
           {/* Source chips */}

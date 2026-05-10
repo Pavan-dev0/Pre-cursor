@@ -1,13 +1,18 @@
 import { motion } from 'framer-motion'
 import SectionLabel from './SectionLabel'
-import { contradictions } from '../../data/mockData'
 
-export default function ContradictionSection() {
+export default function ContradictionSection({ items = [] }) {
+  const hasFallbackOnly = items.length === 1 && items[0]?.left?.claim === 'Insufficient web signal for this section.'
+
   return (
     <div style={{ marginBottom: 56 }}>
       <SectionLabel number="02" title="CONTRADICTIONS" />
       <div style={{ display: 'flex', flexDirection: 'column' }}>
-        {contradictions.map((pair, i) => (
+        {hasFallbackOnly ? (
+          <div className="font-body" style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7, padding: '8px 0 24px' }}>
+            Insufficient web signal for this section.
+          </div>
+        ) : items.map((pair, i) => (
           <motion.div
             key={i}
             style={{
@@ -19,8 +24,8 @@ export default function ContradictionSection() {
             {/* Ghost VS */}
             <motion.div
               className="font-display"
-              initial={{ opacity: 0.04 }}
-              whileHover={{ opacity: 0.12 }}
+              initial={{ color: 'rgba(255,255,255,0.06)' }}
+              whileHover={{ color: 'rgba(255,255,255,0.14)' }}
               transition={{ duration: 0.2 }}
               style={{
                 position: 'absolute',
@@ -29,7 +34,6 @@ export default function ContradictionSection() {
                 transform: 'translate(-50%, -50%)',
                 fontWeight: 800,
                 fontSize: 72,
-                color: 'white',
                 zIndex: 0,
                 pointerEvents: 'none',
                 userSelect: 'none',

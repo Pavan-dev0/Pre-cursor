@@ -1,25 +1,43 @@
-import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useInView } from '../../hooks/useInView'
+import { transitions, withDelay } from '../../lib/motion'
+import { useAdaptiveSignificance, useAdaptiveSurface } from '../../lib/adaptive.jsx'
 
 export default function ThesisCard({ thesis, index = 0 }) {
   const { ref, inView } = useInView({ threshold: 0.2, rootMargin: '0px 0px -10% 0px' })
-  const [hoverHigh, setHoverHigh] = useState(false)
-  const [hoverLow, setHoverLow] = useState(false)
+  const { surfaceProps, isDwelled } = useAdaptiveSurface({ intensity: 0.08, dwellDelay: 280 })
+  const significanceStyle = useAdaptiveSignificance({
+    significance: thesis.confidence / 100,
+    confidence: thesis.confidence / 100,
+    volatility: clampVolatility(1 - thesis.daysAgo / 30),
+    revealBias: index / 10,
+  })
 
   return (
     <motion.div
       ref={ref}
+      className={`interactive-panel ambient-panel significance-surface ${isDwelled ? 'is-dwelled' : ''}`}
+      data-volatility={thesis.daysAgo <= 10 ? 'high' : 'steady'}
       initial={{ opacity: 0, y: 20 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
+      whileHover={{ y: -2 }}
+      transition={withDelay(transitions.reveal, index * 0.08)}
+      {...surfaceProps}
       style={{
+        '--card-confidence': (thesis.confidence / 100).toFixed(3),
+        ...significanceStyle,
         background: 'var(--bg-surface)',
         border: '1px solid rgba(255,255,255,0.08)',
         padding: 28,
         borderRadius: 0,
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        willChange: 'transform, box-shadow',
       }}
     >
+      <div>
       {/* Top row */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div
@@ -29,10 +47,10 @@ export default function ThesisCard({ thesis, index = 0 }) {
           {thesis.title}
         </div>
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
-          <div className="font-display" style={{ fontWeight: 800, fontSize: 28, color: 'var(--accent)' }}>
+          <div className="font-display metric-value" style={{ fontWeight: 800, fontSize: 28, color: 'var(--accent)' }}>
             {thesis.price}
           </div>
-          <div className="font-mono" style={{ fontSize: 9, color: 'var(--text-muted)' }}>
+          <div className="font-mono mono-meta" style={{ fontSize: 9, color: 'var(--text-muted)' }}>
             MARKET PRICE
           </div>
         </div>
@@ -56,33 +74,36 @@ export default function ThesisCard({ thesis, index = 0 }) {
       </div>
 
       {/* Confidence bar */}
-      <div className="font-mono" style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 20, marginBottom: 6 }}>
+      <div className="font-mono mono-meta significance-caption" style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 20, marginBottom: 6 }}>
         Web confidence
       </div>
       <div style={{ height: 2, background: 'rgba(108,99,255,0.15)', width: '100%' }}>
         <motion.div
           initial={{ width: '0%' }}
           animate={{ width: inView ? `${thesis.confidence}%` : '0%' }}
-          transition={{ duration: 0.8, delay: 0.2 }}
+          transition={withDelay(transitions.medium, 0.18)}
           style={{ height: 2, background: 'var(--accent)' }}
         />
       </div>
 
       {/* Stats */}
-      <div className="font-mono" style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 12 }}>
+      <div className="font-mono mono-meta significance-caption" style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 12 }}>
         {thesis.stakers} stakers · Opened {thesis.daysAgo} days ago
+      </div>
       </div>
 
       {/* Buttons */}
       <div style={{ display: 'flex', gap: 8, marginTop: 20 }}>
         <motion.button
-          onMouseEnter={() => setHoverHigh(true)}
-          onMouseLeave={() => setHoverHigh(false)}
-          animate={{
-            backgroundColor: hoverHigh ? '#6C63FF' : 'transparent',
-            color: hoverHigh ? '#ffffff' : '#6C63FF',
+          {...surfaceProps}
+          whileHover={{
+            scale: 1.01,
+            backgroundColor: '#6C63FF',
+            color: '#ffffff',
+            boxShadow: 'var(--glow-accent-soft)',
           }}
-          whileTap={{ scale: 0.97 }}
+          whileTap={{ scale: 0.985 }}
+          transition={transitions.standard}
           className="font-display"
           style={{
             fontWeight: 700,
@@ -92,19 +113,24 @@ export default function ThesisCard({ thesis, index = 0 }) {
             cursor: 'pointer',
             letterSpacing: '0.04em',
             borderRadius: 0,
+            background: 'transparent',
+            color: '#6C63FF',
+            willChange: 'transform, box-shadow, background-color',
           }}
         >
           STAKE HIGH ↑
         </motion.button>
 
         <motion.button
-          onMouseEnter={() => setHoverLow(true)}
-          onMouseLeave={() => setHoverLow(false)}
-          animate={{
-            borderColor: hoverLow ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.12)',
-            color: hoverLow ? '#F0EFF8' : '#444455',
+          {...surfaceProps}
+          whileHover={{
+            scale: 1.01,
+            borderColor: 'rgba(255,255,255,0.28)',
+            color: '#F0EFF8',
+            backgroundColor: 'rgba(255,255,255,0.02)',
           }}
-          whileTap={{ scale: 0.97 }}
+          whileTap={{ scale: 0.985 }}
+          transition={transitions.standard}
           className="font-display"
           style={{
             fontWeight: 700,
@@ -115,6 +141,9 @@ export default function ThesisCard({ thesis, index = 0 }) {
             letterSpacing: '0.04em',
             borderRadius: 0,
             background: 'transparent',
+            color: '#444455',
+            borderColor: 'rgba(255,255,255,0.12)',
+            willChange: 'transform, border-color, color',
           }}
         >
           STAKE LOW ↓
@@ -122,4 +151,8 @@ export default function ThesisCard({ thesis, index = 0 }) {
       </div>
     </motion.div>
   )
+}
+
+function clampVolatility(value) {
+  return Math.min(1, Math.max(0.18, value))
 }

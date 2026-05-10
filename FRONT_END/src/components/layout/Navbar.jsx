@@ -1,12 +1,13 @@
 import { memo } from 'react'
 import { motion } from 'framer-motion'
+import { transitions, withDelay } from '../../lib/motion'
 
 function Navbar() {
   return (
     <motion.nav
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.2 }}
+      transition={withDelay(transitions.reveal, 0.12)}
       style={{
         position: 'fixed',
         top: 0,
@@ -37,20 +38,20 @@ function Navbar() {
 
       <div style={{ display: 'flex', gap: 32 }}>
         {['How it works', 'Sign in'].map((label) => (
-          <span
+          <motion.span
             key={label}
-            className="font-mono"
+            whileHover={{ color: 'var(--accent)', y: -1 }}
+            transition={transitions.micro}
+            className="font-mono kinetic-link"
             style={{
               fontSize: 12,
               color: 'var(--text-secondary)',
               cursor: 'pointer',
-              transition: 'color 150ms',
+              willChange: 'transform',
             }}
-            onMouseEnter={(e) => (e.target.style.color = 'var(--accent)')}
-            onMouseLeave={(e) => (e.target.style.color = 'var(--text-secondary)')}
           >
             {label}
-          </span>
+          </motion.span>
         ))}
       </div>
     </motion.nav>

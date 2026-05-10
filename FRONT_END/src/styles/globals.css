@@ -9,12 +9,26 @@
   --border-subtle: rgba(255, 255, 255, 0.06);
   --border-default: rgba(255, 255, 255, 0.10);
   --border-emphasis: rgba(255, 255, 255, 0.18);
+  --border-strong: rgba(255, 255, 255, 0.24);
   --text-primary: #F0EFF8;
   --text-secondary: #888899;
   --text-muted: #444455;
   --accent: #6C63FF;
   --accent-dim: rgba(108, 99, 255, 0.15);
   --accent-glow: rgba(108, 99, 255, 0.08);
+  --accent-glow-strong: rgba(108, 99, 255, 0.18);
+  --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-micro: 160ms;
+  --duration-standard: 280ms;
+  --duration-medium: 320ms;
+  --duration-cinematic: 640ms;
+  --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.18);
+  --shadow-elevated: 0 22px 48px rgba(0, 0, 0, 0.28);
+  --blur-soft: 8px;
+  --glow-accent-soft: 0 0 0 1px rgba(108, 99, 255, 0.16), 0 14px 34px rgba(108, 99, 255, 0.16);
+  --panel-gradient: linear-gradient(180deg, rgba(255,255,255,0.018) 0%, rgba(255,255,255,0) 100%);
+  --ambient-gradient: radial-gradient(circle at 20% 20%, rgba(108,99,255,0.12) 0%, rgba(108,99,255,0) 52%);
+  --continuity-gradient: linear-gradient(180deg, rgba(108,99,255,0.04) 0%, rgba(108,99,255,0) 100%);
 }
 
 *, *::before, *::after {
@@ -34,10 +48,72 @@ html, body, #root {
 body {
   font-family: 'DM Sans', sans-serif;
   font-weight: 300;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 input, button, textarea {
   font-family: inherit;
+}
+
+button, input, textarea {
+  transition:
+    border-color var(--duration-standard) var(--ease-standard),
+    color var(--duration-standard) var(--ease-standard),
+    background-color var(--duration-standard) var(--ease-standard),
+    box-shadow var(--duration-standard) var(--ease-standard),
+    transform var(--duration-standard) var(--ease-standard);
+}
+
+.adaptive-shell {
+  position: relative;
+  min-height: 100vh;
+  isolation: isolate;
+}
+
+.adaptive-shell::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: var(--adaptive-ambient-opacity, 0.08);
+  transform: translate3d(0, var(--adaptive-ambient-shift, 0px), 0);
+  transition:
+    opacity var(--duration-cinematic) var(--ease-standard),
+    transform var(--duration-cinematic) var(--ease-standard),
+    filter var(--duration-cinematic) var(--ease-standard);
+  filter:
+    saturate(calc(0.98 + var(--adaptive-balance-guard, 1) * 0.04))
+    brightness(calc(0.985 + var(--adaptive-attention-gravity, 0.12) * 0.08))
+    blur(calc((var(--adaptive-depth-softness, 0.12) + var(--adaptive-decompression, 0.12) * 0.08) * 6px));
+  background:
+    radial-gradient(circle at 12% 14%, rgba(108,99,255,0.12) 0%, rgba(108,99,255,0) 34%),
+    radial-gradient(circle at 88% 20%, rgba(255,255,255,0.025) 0%, rgba(255,255,255,0) 28%),
+    linear-gradient(180deg, rgba(255,255,255,0.012) 0%, rgba(255,255,255,0) 45%);
+  will-change: transform, opacity;
+}
+
+.adaptive-shell::after {
+  content: '';
+  position: fixed;
+  inset: -6%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: var(--adaptive-memory-warmth, 0.08);
+  animation: ambient-drift var(--adaptive-breath-duration, 18s) var(--ease-standard) infinite alternate;
+  transform: translate3d(0, var(--adaptive-anticipation-flow, 0px), 0);
+  filter: blur(calc(var(--adaptive-continuity-field, 0.08) * 8px));
+  background:
+    radial-gradient(circle at 24% 18%, rgba(108,99,255,0.12) 0%, rgba(108,99,255,0) 32%),
+    radial-gradient(circle at 78% 72%, rgba(255,255,255,0.025) 0%, rgba(255,255,255,0) 28%);
+  will-change: transform, opacity;
+}
+
+.adaptive-shell > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* ── Ticker ── */
@@ -56,6 +132,7 @@ input, button, textarea {
   display: flex;
   white-space: nowrap;
   animation: ticker 30s linear infinite;
+  will-change: transform;
 }
 
 .ticker-content span {
@@ -93,17 +170,327 @@ input, button, textarea {
   90%     { transform: translate(-1%,2%); }
 }
 
-.grain-overlay {
-  position: fixed;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
+@keyframes ambient-drift {
+  0%   { transform: translate3d(-2%, -1%, 0) scale(1); }
+  50%  { transform: translate3d(1.5%, 1%, 0) scale(1.03); }
+  100% { transform: translate3d(2%, -1.5%, 0) scale(1.02); }
+}
+
+.hero-shell::before {
+  content: '';
+  position: absolute;
+  inset: -50%;
   pointer-events: none;
   z-index: 1;
   opacity: 0.04;
   animation: grain 8s steps(1) infinite;
+  mix-blend-mode: screen;
+  background-repeat: repeat;
+  background-size: 240px 240px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+
+.hero-shell::after {
+  content: '';
+  position: absolute;
+  inset: -12%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.16;
+  background:
+    radial-gradient(circle at 18% 22%, rgba(108,99,255,0.16) 0%, rgba(108,99,255,0) 42%),
+    radial-gradient(circle at 82% 28%, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0) 34%);
+  animation: ambient-drift 18s var(--ease-standard) infinite alternate;
+  will-change: transform;
+}
+
+.narrative-section {
+  position: relative;
+  z-index: 1;
+  transition:
+    opacity var(--duration-cinematic) var(--ease-standard),
+    transform var(--duration-cinematic) var(--ease-standard),
+    filter var(--duration-cinematic) var(--ease-standard),
+    background-color var(--duration-cinematic) var(--ease-standard),
+    box-shadow var(--duration-cinematic) var(--ease-standard);
+}
+
+.narrative-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: var(--continuity-gradient);
+  transition:
+    opacity var(--duration-cinematic) var(--ease-standard),
+    transform var(--duration-cinematic) var(--ease-standard);
+  transform: translate3d(0, calc(var(--adaptive-reading-rhythm, 0.3) * 8px), 0);
+}
+
+.narrative-section::after {
+  content: '';
+  position: absolute;
+  inset: 8% 0 auto;
+  height: 38%;
+  pointer-events: none;
+  opacity: calc(var(--adaptive-echo-opacity, 0.04) * 0.32);
+  background: linear-gradient(180deg, rgba(255,255,255,0.028) 0%, rgba(255,255,255,0) 100%);
+  transform: scaleY(calc(0.96 + var(--adaptive-temporal-presence, 0.18) * 0.08));
+  transform-origin: top center;
+  transition:
+    opacity var(--duration-cinematic) var(--ease-standard),
+    transform var(--duration-cinematic) var(--ease-standard);
+}
+
+.narrative-section.was-visited::before {
+  opacity: calc(0.06 + var(--adaptive-memory-warmth, 0.08) * 0.42 + var(--adaptive-continuity-field, 0.12) * 0.12);
+}
+
+.narrative-section.was-visited:not(.is-active) {
+  opacity: var(--adaptive-inactive-opacity, 0.9);
+  filter:
+    saturate(calc(1 - var(--adaptive-quietness, 0.2) * 0.12))
+    brightness(calc(1 - var(--adaptive-quietness, 0.2) * 0.05))
+    blur(calc((var(--adaptive-depth-softness, 0.12) + var(--adaptive-hierarchy-softness, 0.18) * 0.08) * 0.8px));
+}
+
+.narrative-section.is-active {
+  opacity: var(--adaptive-section-emphasis, 1);
+  filter:
+    brightness(calc(0.988 + var(--adaptive-detail-presence, 0.16) * 0.12))
+    saturate(calc(1 + var(--adaptive-focus-plane, 0.12) * 0.08));
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, calc(var(--adaptive-continuity-field, 0.08) * 0.08));
+}
+
+.narrative-section.is-active::before {
+  opacity: calc(0.1 + var(--adaptive-memory-warmth, 0.08) * 0.44 + var(--adaptive-attention-gravity, 0.12) * 0.1);
+  transform: translate3d(0, 0, 0);
+}
+
+.narrative-section.is-active::after {
+  opacity: calc(var(--adaptive-echo-opacity, 0.04) * 0.56);
+}
+
+.ambient-heading {
+  text-wrap: balance;
+}
+
+.mono-meta {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+}
+
+.metric-value {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+  letter-spacing: -0.03em;
+}
+
+.kinetic-link {
+  position: relative;
+  display: inline-block;
+}
+
+.kinetic-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 1px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+  opacity: 0.9;
+  transition: transform var(--duration-standard) var(--ease-standard);
+}
+
+.kinetic-link:hover::after {
+  transform: scaleX(1);
+}
+
+.interactive-panel {
+  transition:
+    transform var(--duration-standard) var(--ease-standard),
+    border-color var(--duration-standard) var(--ease-standard),
+    box-shadow var(--duration-standard) var(--ease-standard),
+    background-color var(--duration-standard) var(--ease-standard),
+    filter var(--duration-standard) var(--ease-standard),
+    opacity var(--duration-standard) var(--ease-standard);
+  transition-delay: 0ms, 0ms, var(--adaptive-bloom-delay, 220ms), 0ms, 0ms, 0ms;
+  box-shadow: var(--shadow-soft);
+  opacity: calc(0.95 + var(--adaptive-balance-guard, 1) * 0.035 + var(--adaptive-attention-gravity, 0.12) * 0.02);
+  transform: translate3d(0, 0, 0);
+  filter:
+    saturate(calc(0.985 + var(--adaptive-detail-presence, 0.16) * 0.06))
+    brightness(calc(1 - var(--adaptive-hierarchy-softness, 0.18) * 0.02))
+    blur(calc(var(--adaptive-depth-softness, 0.12) * 0.18px));
+}
+
+.interactive-panel:hover {
+  box-shadow:
+    var(--shadow-elevated),
+    0 0 0 1px rgba(108, 99, 255, calc(var(--adaptive-panel-glow, 0.1) * 0.28 + var(--adaptive-attention-gravity, 0.12) * 0.08));
+  border-color: rgba(255, 255, 255, 0.14);
+  filter:
+    saturate(calc(1 + var(--adaptive-focus-plane, 0.12) * 0.08))
+    blur(0px);
+}
+
+.interactive-panel.is-dwelled {
+  box-shadow:
+    var(--shadow-elevated),
+    0 0 0 1px rgba(108, 99, 255, calc(var(--adaptive-panel-glow, 0.1) * 0.52));
+}
+
+.interactive-panel .metric-value {
+  transition:
+    text-shadow var(--duration-medium) var(--ease-standard),
+    color var(--duration-standard) var(--ease-standard),
+    opacity var(--duration-standard) var(--ease-standard);
+  opacity: calc(0.96 + var(--adaptive-detail-presence, 0.16) * 0.06);
+}
+
+.narrative-section.is-active .interactive-panel .metric-value,
+.interactive-panel.is-dwelled .metric-value {
+  text-shadow:
+    0 0 calc(10px + var(--card-confidence, 0.5) * 12px + var(--signal-significance, 0.5) * 6px)
+    rgba(108, 99, 255, calc(var(--adaptive-metric-intensity, 0.18) * var(--card-confidence, 0.5) * 0.8));
+}
+
+.interactive-panel-accent:hover {
+  border-color: rgba(108, 99, 255, 0.72);
+}
+
+.ambient-panel {
+  position: relative;
+  overflow: hidden;
+  background-image: var(--panel-gradient);
+}
+
+.ambient-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--ambient-gradient);
+  opacity: 0;
+  transform: translate3d(0, calc(8px + var(--adaptive-decompression, 0.12) * 8px), 0);
+  transition:
+    opacity var(--duration-medium) var(--ease-standard),
+    transform var(--duration-medium) var(--ease-standard),
+    filter var(--duration-medium) var(--ease-standard);
+  filter: blur(calc(var(--adaptive-continuity-field, 0.08) * 4px));
+}
+
+.ambient-panel:hover::after {
+  opacity: calc((var(--adaptive-panel-glow, 0.1) * 0.7 + var(--adaptive-attention-gravity, 0.12) * 0.08) * var(--adaptive-balance-guard, 1));
+  transform: translate3d(0, 0, 0);
+}
+
+.ambient-panel.is-dwelled::after {
+  opacity: calc((var(--adaptive-panel-glow, 0.1) * 0.92 + var(--adaptive-focus-cluster, 0.12) * 0.08) * var(--adaptive-balance-guard, 1));
+  transform: translate3d(0, 0, 0);
+}
+
+.significance-surface {
+  transition-delay: var(--signal-reveal-delay, 180ms);
+  border-color: rgba(255, 255, 255, calc(0.08 + var(--signal-confidence, 0.5) * 0.06));
+}
+
+.significance-surface .metric-value {
+  color: var(--accent);
+  opacity: calc(0.9 + var(--signal-significance, 0.5) * 0.1);
+}
+
+.significance-surface::before {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, calc(0.016 + var(--signal-significance, 0.5) * 0.02)) 0%,
+      rgba(255, 255, 255, 0) 100%
+    );
+}
+
+.significance-surface[data-volatility='high'] .metric-value {
+  opacity: calc(0.9 + var(--signal-confidence, 0.5) * 0.08);
+}
+
+.significance-caption {
+  opacity: calc(0.78 + var(--signal-weight, 0.5) * 0.16 - var(--signal-volatility, 0.2) * 0.06);
+}
+
+.ambient-chip {
+  transition:
+    border-color var(--duration-micro) var(--ease-standard),
+    color var(--duration-micro) var(--ease-standard),
+    background-color var(--duration-standard) var(--ease-standard);
+}
+
+.ambient-chip:hover {
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+  background-color: rgba(255,255,255,0.02);
+}
+
+.scan-shell {
+  position: relative;
+}
+
+.scan-shell::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(circle at 18% 50%, rgba(108,99,255,0.14) 0%, rgba(108,99,255,0) 58%);
+  transition:
+    opacity var(--duration-medium) var(--ease-standard),
+    transform var(--duration-medium) var(--ease-standard);
+  transform: translate3d(0, 4px, 0);
+}
+
+.scan-shell.is-focused::after {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.scan-shell.is-dwelled::after {
+  opacity: calc(var(--adaptive-panel-glow, 0.1) * 0.82);
+  transform: translate3d(0, 0, 0);
+}
+
+.adaptive-shell[data-next-section='report'] .narrative-section-report::before,
+.adaptive-shell[data-next-section='prophecy'] .narrative-section-prophecy::before,
+.adaptive-shell[data-next-section='market'] .narrative-section-market::before,
+.adaptive-shell[data-next-section='score'] .narrative-section-score::before,
+.adaptive-shell[data-next-section='footer'] .narrative-section-footer::before {
+  opacity: calc(0.04 + var(--adaptive-predictive-readiness, 0.08) * 0.26 + var(--adaptive-continuity-field, 0.08) * 0.08);
+}
+
+.adaptive-shell[data-next-section='report'] .narrative-section-report,
+.adaptive-shell[data-next-section='prophecy'] .narrative-section-prophecy,
+.adaptive-shell[data-next-section='market'] .narrative-section-market,
+.adaptive-shell[data-next-section='score'] .narrative-section-score,
+.adaptive-shell[data-next-section='footer'] .narrative-section-footer {
+  filter:
+    brightness(calc(0.992 + var(--adaptive-predictive-readiness, 0.08) * 0.05))
+    saturate(calc(1 + var(--adaptive-predictive-readiness, 0.08) * 0.03));
+}
+
+.scan-input::placeholder {
+  color: rgba(240, 239, 248, 0.32);
+}
+
+.dna-highlight {
+  transition:
+    border-color var(--duration-standard) var(--ease-standard),
+    color var(--duration-standard) var(--ease-standard);
+}
+
+.dna-highlight:hover {
+  border-color: rgba(108, 99, 255, 0.92);
 }
 
 /* ── Scrollbar ── */

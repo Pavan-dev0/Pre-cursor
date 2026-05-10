@@ -21,7 +21,7 @@ function formatLine(line) {
   return <span>{line}</span>
 }
 
-export default function TerminalFeed({ lines }) {
+export default function TerminalFeed({ lines, showCursor = false }) {
   return (
     <div>
       <div
@@ -43,6 +43,16 @@ export default function TerminalFeed({ lines }) {
             {formatLine(line)}
           </motion.div>
         ))}
+        {showCursor && (
+          <motion.div
+            animate={{ opacity: [1, 0, 1] }}
+            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+            className="font-mono"
+            style={{ fontSize: 12, color: 'var(--accent)', lineHeight: 1.8 }}
+          >
+            ▋
+          </motion.div>
+        )}
       </div>
     </div>
   )

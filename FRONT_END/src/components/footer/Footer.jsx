@@ -1,6 +1,12 @@
+import { useAdaptiveSection } from '../../lib/adaptive.jsx'
+
 export default function Footer() {
+  const { ref, isActive, wasVisited } = useAdaptiveSection('footer', { threshold: 0.45, rootMargin: '0px 0px -8% 0px' })
+
   return (
     <div
+      ref={ref}
+      className={`narrative-section narrative-section-footer ${isActive ? 'is-active' : ''} ${wasVisited ? 'was-visited' : ''}`}
       style={{
         borderTop: '1px solid var(--border-subtle)',
         padding: '24px 48px',

@@ -1,16 +1,20 @@
 import { motion } from 'framer-motion'
 import SectionLabel from './SectionLabel'
 import { useInView } from '../../hooks/useInView'
-import { consensusSignals } from '../../data/mockData'
 
-export default function ConsensusSection() {
+export default function ConsensusSection({ items = [] }) {
   const { ref, inView } = useInView()
+  const hasFallbackOnly = items.length === 1 && items[0]?.claim === 'Insufficient web signal for this section.'
 
   return (
     <div ref={ref} style={{ marginBottom: 56 }}>
       <SectionLabel number="01" title="CONSENSUS" />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 36 }}>
-        {consensusSignals.map((item, i) => (
+        {hasFallbackOnly ? (
+          <div className="font-body" style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
+            Insufficient web signal for this section.
+          </div>
+        ) : items.map((item, i) => (
           <div key={item.id} style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
             <div
               className="font-display"

@@ -1,51 +1,66 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import TerminalFeed from './TerminalFeed'
 import SourceCounter from './SourceCounter'
-import { terminalLines } from '../../data/mockData'
 
-const LOADER_TOTAL_MS = 6000
-const REPORT_TRANSITION_DELAY_MS = 800
-const TERMINAL_REVEAL_MS = LOADER_TOTAL_MS - REPORT_TRANSITION_DELAY_MS
 const SOURCE_TYPE_COUNT = 6
+const MIN_MS = 6000
+const LINE_INTERVAL_MS = Math.round(MIN_MS / 19)
 
-export default function ScanLoader({ setView }) {
-  const [visibleCount, setVisibleCount] = useState(0)
+const buildTerminalLines = (topic) => [
+  '→ Anakin: initializing universal scraper...',
+  `→ Anakin: fetching reddit.com/r/india [scanning ${topic}]`,
+  '→ Anakin: fetching news.ycombinator.com',
+  '→ Anakin: fetching wellfound.com/jobs',
+  '→ Anakin: fetching naukri.com',
+  '→ Anakin: fetching yourstory.com',
+  '→ Anakin: fetching inc42.com',
+  '→ Anakin: fetching producthunt.com',
+  '→ Anakin: fetching techcrunch.com',
+  '→ 8 sources collected. Filtering signal-rich content...',
+  '→ Zeitgeist Engine: extracting atomic signals...',
+  '→ Running contradiction detection across sources...',
+  '→ Mapping silence patterns — what the web is NOT saying...',
+  '→ Detecting velocity anomalies...',
+  '→ Extracting cultural DNA from language patterns...',
+  '→ Prophecy Engine: analyzing precursor signatures...',
+  '→ Pattern-matching against historical signals...',
+  '→ Generating thesis cards...',
+  '→ PRECURSOR REPORT READY.',
+]
+
+export default function ScanLoader({ stage, sourceCountTarget, topic }) {
+  const lines = useMemo(() => buildTerminalLines(topic), [topic])
+  const [visibleCount, setVisibleCount] = useState(1)
+  const startRef = useRef(Date.now())
 
   const checkedCount = Math.min(
     SOURCE_TYPE_COUNT,
-    Math.floor((visibleCount / terminalLines.length) * SOURCE_TYPE_COUNT)
+    Math.floor((visibleCount / Math.max(lines.length, 1)) * SOURCE_TYPE_COUNT)
   )
 
   useEffect(() => {
-    const lineIntervalMs = TERMINAL_REVEAL_MS / terminalLines.length
-    let lineIndex = 0
+    startRef.current = Date.now()
+    setVisibleCount(1)
+  }, [topic])
 
-    const intervalId = setInterval(() => {
-      lineIndex += 1
-      setVisibleCount(Math.min(lineIndex, terminalLines.length))
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      const elapsed = Date.now() - startRef.current
+      const nextCount = Math.min(lines.length, Math.floor(elapsed / LINE_INTERVAL_MS) + 1)
+      setVisibleCount(nextCount)
+    }, LINE_INTERVAL_MS)
 
-      if (lineIndex >= terminalLines.length) {
-        clearInterval(intervalId)
-      }
-    }, lineIntervalMs)
+    return () => window.clearInterval(intervalId)
+  }, [lines.length])
 
-    const finalizeId = setTimeout(() => {
-      setVisibleCount(terminalLines.length)
-      clearInterval(intervalId)
-    }, TERMINAL_REVEAL_MS)
-
-    const reportId = setTimeout(() => {
-      setVisibleCount(terminalLines.length)
-      setView('report')
-    }, LOADER_TOTAL_MS)
-
-    return () => {
-      clearInterval(intervalId)
-      clearTimeout(finalizeId)
-      clearTimeout(reportId)
-    }
-  }, [setView])
+  const stageLabel = {
+    scanning: 'SCANNING',
+    analyzing: 'ANALYZING',
+    prophecy: 'PROPHECY',
+    complete: 'FINALIZING',
+    idle: 'INITIALIZING'
+  }[stage] || 'INITIALIZING'
 
   return (
     <motion.div
@@ -61,11 +76,22 @@ export default function ScanLoader({ setView }) {
       }}
     >
       <div style={{ flex: '0 0 58%' }}>
-        <TerminalFeed lines={terminalLines.slice(0, visibleCount)} />
+        <div className="font-mono mono-meta" style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 20 }}>
+          STAGE · {stageLabel}
+        </div>
+        <TerminalFeed
+          lines={lines.slice(0, visibleCount)}
+          showCursor={visibleCount >= lines.length && stage !== 'complete'}
+        />
       </div>
 
       <div style={{ flex: 1 }}>
-        <SourceCounter checkedCount={checkedCount} trigger duration={TERMINAL_REVEAL_MS} />
+        <SourceCounter
+          checkedCount={checkedCount}
+          trigger={visibleCount > 0}
+          duration={1800}
+          sourceCountTarget={sourceCountTarget}
+        />
       </div>
     </motion.div>
   )

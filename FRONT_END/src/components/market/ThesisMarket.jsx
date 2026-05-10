@@ -1,11 +1,23 @@
+import { motion } from 'framer-motion'
 import ThesisCard from './ThesisCard'
-import { theses } from '../../data/mockData'
+import { fadeUpVariants, staggerContainer, transitions, viewportOnce, withDelay } from '../../lib/motion'
+import { useAdaptiveSection } from '../../lib/adaptive.jsx'
 
-export default function ThesisMarket() {
+export default function ThesisMarket({ theses = [] }) {
+  const { ref, isActive, wasVisited } = useAdaptiveSection('market')
+
   return (
-    <div style={{ padding: '80px 48px', borderTop: '1px solid var(--border-subtle)' }}>
+    <motion.div
+      ref={ref}
+      className={`narrative-section narrative-section-market ${isActive ? 'is-active' : ''} ${wasVisited ? 'was-visited' : ''}`}
+      initial="hidden"
+      whileInView="visible"
+      viewport={viewportOnce}
+      variants={staggerContainer(0.08, 0.02)}
+      style={{ padding: '72px 48px 76px', borderTop: '1px solid var(--border-subtle)' }}
+    >
       {/* Header */}
-      <div style={{ marginBottom: 48 }}>
+      <motion.div variants={fadeUpVariants(18, transitions.reveal)} style={{ marginBottom: 34 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <div
             className="font-display"
@@ -29,18 +41,21 @@ export default function ThesisMarket() {
         </div>
         <div
           className="font-body"
-          style={{ fontSize: 16, fontStyle: 'italic', color: 'var(--text-muted)', marginTop: 12 }}
+          style={{ fontSize: 16, fontStyle: 'italic', color: 'var(--text-muted)', marginTop: 10, maxWidth: 520 }}
         >
           Stake your conviction on which gaps become billion-dollar companies.
         </div>
-      </div>
+      </motion.div>
 
       {/* Cards grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1 }}>
+      <motion.div
+        variants={fadeUpVariants(18, withDelay(transitions.reveal, 0.04))}
+        style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, alignItems: 'stretch' }}
+      >
         {theses.map((t, i) => (
           <ThesisCard key={i} thesis={t} index={i} />
         ))}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }
