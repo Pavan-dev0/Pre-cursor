@@ -13,6 +13,7 @@ const cache = new Map()
 const CACHE_TTL = 60 * 60 * 1000
 
 const app = express()
+app.set('trust proxy', 1)
 
 const allowedOrigins = new Set([
   'http://localhost:5173',

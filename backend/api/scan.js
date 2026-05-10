@@ -8,6 +8,7 @@ const { anakinScrapeMany } = require('../lib/anakin')
 const { getDemoSources } = require('../lib/demoData')
 
 const app = express()
+app.set('trust proxy', 1)
 
 const allowedOrigins = new Set([
   'http://localhost:5173',

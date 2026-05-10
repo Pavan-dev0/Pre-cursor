@@ -6,6 +6,7 @@ require('dotenv').config()
 const { analyzeWithZeitgeist } = require('../lib/zeitgeist')
 
 const app = express()
+app.set('trust proxy', 1)
 
 const allowedOrigins = new Set([
   'http://localhost:5173',
