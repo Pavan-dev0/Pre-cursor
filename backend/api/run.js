@@ -1,6 +1,3 @@
-const express = require('express')
-const cors = require('cors')
-const rateLimit = require('express-rate-limit')
 require('dotenv').config()
 
 const { generateURLs } = require('../lib/urlGenerator')
@@ -12,35 +9,36 @@ const { getDemoSources } = require('../lib/demoData')
 const cache = new Map()
 const CACHE_TTL = 60 * 60 * 1000
 
-const app = express()
-app.set('trust proxy', 1)
-
 const allowedOrigins = new Set([
   'http://localhost:5173',
   process.env.FRONTEND_URL
 ].filter(Boolean))
 
-app.use(cors({
-  origin(origin, callback) {
-    if (!origin || allowedOrigins.has(origin)) {
-      callback(null, true)
-      return
-    }
-
-    callback(new Error('Origin not allowed by CORS'))
+function applyCors(req, res) {
+  const origin = req.headers.origin
+  if (!origin || allowedOrigins.has(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin || '*')
   }
-}))
-app.use(express.json({ limit: '3mb' }))
-app.use(rateLimit({
-  windowMs: 60 * 1000,
-  max: 5,
-  standardHeaders: true,
-  legacyHeaders: false
-}))
 
-app.post('/', async (req, res) => {
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+}
+
+module.exports = async (req, res) => {
+  applyCors(req, res)
+
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end()
+  }
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' })
+  }
+
   const { topic, demoMode } = req.body || {}
-  if (!topic) return res.status(400).json({ error: 'topic is required' })
+  if (!topic) {
+    return res.status(400).json({ error: 'topic is required' })
+  }
 
   const cacheKey = topic.toLowerCase().trim()
   if (cache.has(cacheKey)) {
@@ -94,6 +92,4 @@ app.post('/', async (req, res) => {
     console.error('/api/run error:', err)
     return res.status(500).json({ success: false, error: err.message })
   }
-})
-
-module.exports = app
+}
