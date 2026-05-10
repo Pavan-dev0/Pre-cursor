@@ -1,6 +1,7 @@
+import { memo } from 'react'
 import { motion } from 'framer-motion'
 
-export default function Navbar() {
+function Navbar() {
   return (
     <motion.nav
       initial={{ opacity: 0, y: -20 }}
@@ -19,7 +20,7 @@ export default function Navbar() {
         backdropFilter: 'blur(8px)',
         background: 'rgba(5,5,8,0.85)',
         borderBottom: '1px solid rgba(255,255,255,0.05)',
-        zIndex: 1000,
+        zIndex: 4000,
       }}
     >
       <span
@@ -55,3 +56,5 @@ export default function Navbar() {
     </motion.nav>
   )
 }
+
+export default memo(Navbar)

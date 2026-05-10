@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { useInView } from '../../hooks/useInView'
 
 export default function ThesisCard({ thesis, index = 0 }) {
-  const { ref, inView } = useInView(0.2)
+  const { ref, inView } = useInView({ threshold: 0.2, rootMargin: '0px 0px -10% 0px' })
   const [hoverHigh, setHoverHigh] = useState(false)
   const [hoverLow, setHoverLow] = useState(false)
 
@@ -61,6 +61,7 @@ export default function ThesisCard({ thesis, index = 0 }) {
       </div>
       <div style={{ height: 2, background: 'rgba(108,99,255,0.15)', width: '100%' }}>
         <motion.div
+          initial={{ width: '0%' }}
           animate={{ width: inView ? `${thesis.confidence}%` : '0%' }}
           transition={{ duration: 0.8, delay: 0.2 }}
           style={{ height: 2, background: 'var(--accent)' }}

@@ -13,7 +13,7 @@ export default function App() {
   const [view, setView] = useState('hero')
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}> 
       <Navbar />
 
       <div style={{ paddingTop: 52 }}>

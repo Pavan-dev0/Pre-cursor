@@ -4,31 +4,49 @@ import TerminalFeed from './TerminalFeed'
 import SourceCounter from './SourceCounter'
 import { terminalLines } from '../../data/mockData'
 
+const LOADER_TOTAL_MS = 6000
+const REPORT_TRANSITION_DELAY_MS = 800
+const TERMINAL_REVEAL_MS = LOADER_TOTAL_MS - REPORT_TRANSITION_DELAY_MS
+const SOURCE_TYPE_COUNT = 6
+
 export default function ScanLoader({ setView }) {
   const [visibleCount, setVisibleCount] = useState(0)
-  const [done, setDone] = useState(false)
 
-  const checkedCount = Math.floor((visibleCount / terminalLines.length) * 6)
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setVisibleCount((v) => {
-        if (v >= terminalLines.length) {
-          clearInterval(interval)
-          return v
-        }
-        return v + 1
-      })
-    }, 180)
-    return () => clearInterval(interval)
-  }, [])
+  const checkedCount = Math.min(
+    SOURCE_TYPE_COUNT,
+    Math.floor((visibleCount / terminalLines.length) * SOURCE_TYPE_COUNT)
+  )
 
   useEffect(() => {
-    if (visibleCount >= terminalLines.length && !done) {
-      setDone(true)
-      setTimeout(() => setView('report'), 800)
+    const lineIntervalMs = TERMINAL_REVEAL_MS / terminalLines.length
+    let lineIndex = 0
+
+    const intervalId = setInterval(() => {
+      lineIndex += 1
+      setVisibleCount(Math.min(lineIndex, terminalLines.length))
+
+      if (lineIndex >= terminalLines.length) {
+        clearInterval(intervalId)
+      }
+    }, lineIntervalMs)
+
+    const finalizeId = setTimeout(() => {
+      setVisibleCount(terminalLines.length)
+      clearInterval(intervalId)
+    }, TERMINAL_REVEAL_MS)
+
+    const reportId = setTimeout(() => {
+      setVisibleCount(terminalLines.length)
+      setView('report')
+    }, LOADER_TOTAL_MS)
+
+    return () => {
+      clearInterval(intervalId)
+      clearTimeout(finalizeId)
+      clearTimeout(reportId)
     }
-  }, [visibleCount, done, setView])
+  }, [setView])
+
 
   return (
     <motion.div
@@ -48,7 +66,7 @@ export default function ScanLoader({ setView }) {
       </div>
 
       <div style={{ flex: 1 }}>
-        <SourceCounter checkedCount={checkedCount} />
+        <SourceCounter checkedCount={checkedCount} trigger duration={TERMINAL_REVEAL_MS} />
       </div>
     </motion.div>
   )

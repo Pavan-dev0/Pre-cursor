@@ -4,7 +4,7 @@ import { useScrambleText } from '../../hooks/useScrambleText'
 import { useInView } from '../../hooks/useInView'
 
 export default function ProphecyCard({ prophecy, delay = 0 }) {
-  const { ref, inView } = useInView(0.2)
+  const { ref, inView } = useInView({ threshold: 0.2, rootMargin: '0px 0px -10% 0px' })
   const count = useCountUp(prophecy.confidence, inView, 1000)
   const { displayText } = useScrambleText(prophecy.statement, inView, 700)
 
@@ -38,6 +38,7 @@ export default function ProphecyCard({ prophecy, delay = 0 }) {
         }}
       >
         <motion.div
+          initial={{ width: '0%' }}
           animate={{ width: inView ? `${prophecy.confidence}%` : '0%' }}
           transition={{ duration: 0.8, delay: 0.3 }}
           style={{ height: 1, background: 'var(--accent)', position: 'absolute', top: 0, left: 0 }}
